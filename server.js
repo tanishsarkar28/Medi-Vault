@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -109,17 +110,44 @@ app.post('/api/notify', (req, res) => {
     const user = db.users.find(u => u.id === id);
 
     if (user) {
-        // MOCK SMS SENDING
-        console.log(`[MOCK SMS] To: ${user.emergencyContact}`);
-        console.log(`[MOCK SMS] Message: ALERT! The Medi-Vault QR code for ${user.fullName} was scanned.`);
+        // Send Notification (WhatsApp/SMS via Twilio)
 
+        let locationMsg = 'Location: Not provided (User blocked location or error).';
+        let mapsLink = '';
         if (latitude && longitude) {
-            console.log(`[MOCK SMS] Location: https://www.google.com/maps?q=${latitude},${longitude}`);
-        } else {
-            console.log(`[MOCK SMS] Location: Not provided (User blocked location or error).`);
+            mapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
+            locationMsg = `Location: ${mapsLink}`;
         }
 
-        res.json({ success: true, message: 'Emergency contact notified (Mocked)' });
+        console.log(`[NOTIFY] Alerting ${user.emergencyContact} for ${user.fullName}`);
+
+        if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER) {
+            try {
+                const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+
+                // Use user provided number or fallback to sandbox number for 'For'
+                const to = `whatsapp:${user.emergencyContact.replace(/\s+/g, '')}`;
+                const from = `whatsapp:${process.env.TWILIO_PHONE_NUMBER}`;
+
+                client.messages.create({
+                    body: `🚨 *Medi-Vault Emergency Alert* 🚨\n\nThe medical record for *${user.fullName}* was just scanned.\n\n${locationMsg}\n\nPlease contact them or emergency services if needed.`,
+                    from: from,
+                    to: to
+                })
+                    .then(message => console.log(`[TWILIO] Message sent: ${message.sid}`))
+                    .catch(err => console.error(`[TWILIO ERROR] ${err.message}`));
+
+                res.json({ success: true, message: 'Emergency alert sent via WhatsApp' });
+            } catch (err) {
+                console.error('[TWILIO INIT ERROR]', err);
+                res.json({ success: false, message: 'Failed to initialize Twilio' });
+            }
+        } else {
+            console.log('[MOCK NOTIFICATION] Twilio credentials missing. Printing to console:');
+            console.log(`To: ${user.emergencyContact}`);
+            console.log(`Msg: QR scanned for ${user.fullName}. ${locationMsg}`);
+            res.json({ success: true, message: 'Emergency contact notified (Mocked - Set env vars for real)' });
+        }
     } else {
         res.status(404).json({ error: 'User not found for notification' });
     }
