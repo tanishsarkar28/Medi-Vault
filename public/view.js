@@ -54,11 +54,38 @@ function showError(msg) {
 // 3. Notification Logic (Location Disabled)
 function triggerNotification() {
     locationStatus.textContent = '⏳ Sending emergency alert...';
-    // Send notification immediately without location
     sendNotification(null, null);
 }
 
+async function sendNotification(latitude, longitude) {
+    try {
+        locationStatus.innerHTML += ' <span style="color:var(--text-muted)">(Requesting server...)</span>';
 
+        const response = await fetch('/api/notify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: userId,
+                latitude,
+                longitude
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            locationStatus.innerHTML = '✅ <b>Emergency Alert Sent!</b><br>Family has been notified.';
+            locationStatus.style.color = 'var(--success)';
+            console.log('Notification sent successfully');
+        } else {
+            throw new Error(result.message || 'Server error');
+        }
+    } catch (e) {
+        console.error('Failed to send notification', e);
+        locationStatus.innerHTML = `❌ <b>Alert Failed</b><br>Error: ${e.message}.<br><a href="tel:${document.getElementById('callBtn').href}">Please Call Manually</a>`;
+        locationStatus.style.color = '#ff4757';
+    }
+}
 
 // Start
 loadUserData();
