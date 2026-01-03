@@ -60,44 +60,77 @@ function triggerNotification() {
         return;
     }
 
-    const options = {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
-    };
+    locationStatus.textContent = '⏳ Acquiring precise location...';
 
-    locationStatus.textContent = '⏳ Acquiring location...';
+    const highAccuracyOptions = { enableHighAccuracy: true, timeout: 6000, maximumAge: 0 };
 
+    // Attempt 1: High Accuracy (GPS)
     navigator.geolocation.getCurrentPosition(
         (position) => {
             const { latitude, longitude } = position.coords;
-            locationStatus.textContent = '✅ Location sent to family.';
+            locationStatus.innerHTML = '✅ Location acquired (GPS).<br>Sending alert...';
             sendNotification(latitude, longitude);
         },
         (error) => {
-            let msg = 'Unknown error';
-            switch (error.code) {
-                case error.PERMISSION_DENIED:
-                    msg = 'Permission denied';
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    msg = 'Position unavailable';
-                    break;
-                case error.TIMEOUT:
-                    msg = 'Location timeout';
-                    break;
-            }
-            // Check for insecure origin (common on mobile LAN)
-            if (window.isSecureContext === false) {
-                msg += ' (Insecure Context: Use HTTPS)';
-            }
+            console.warn('GPS failed, trying low accuracy...', error);
+            locationStatus.textContent = '⚠️ GPS weak/blocked. Trying network location...';
 
-            locationStatus.textContent = `⚠️ Location failed: ${msg}. Sending alert anyway.`;
-            console.warn('Geolocation error:', error);
-            sendNotification(null, null);
+            // Attempt 2: Low Accuracy (Wi-Fi/Cell)
+            const lowAccuracyOptions = { enableHighAccuracy: false, timeout: 10000, maximumAge: 0 };
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    locationStatus.innerHTML = '✅ Location acquired (Network).<br>Sending alert...';
+                    sendNotification(latitude, longitude);
+                },
+                (finalError) => {
+                    handleLocationError(finalError);
+                },
+                lowAccuracyOptions
+            );
         },
-        options
+        highAccuracyOptions
     );
+}
+
+function handleLocationError(error) {
+    let msg = 'Unknown error';
+    let hint = '';
+
+    switch (error.code) {
+        case error.PERMISSION_DENIED:
+            msg = 'Permission Denied';
+            hint = 'Please allow location access in your browser settings.';
+            break;
+        case error.POSITION_UNAVAILABLE:
+            msg = 'Position Unavailable';
+            hint = 'Device cannot interpret location signals.';
+            break;
+        case error.TIMEOUT:
+            msg = 'Timeout';
+            hint = 'Location request took too long.';
+            break;
+    }
+
+    // Critical Check for Mobile Testing over LAN
+    if (window.isSecureContext === false) {
+        msg = 'INSECURE CONNECTION';
+        hint = '<b>CRITICAL:</b> Browsers BLOCK location on "http://" (except localhost).<br>To test on phone, you must deploy to a secure host (Render/Vercel) or use ngrok.';
+    }
+
+    locationStatus.innerHTML = `
+        <div style="color: #ff4757; border: 1px solid #ff4757; padding: 10px; border-radius: 8px; margin-top: 10px; background: rgba(255, 71, 87, 0.1);">
+            <strong>⚠️ LOCATION FAILED</strong><br>
+            Reason: ${msg}<br>
+            <small>${hint}</small>
+        </div>
+        <div style="margin-top:5px; font-size:0.8em; color: var(--text-muted);">Sending alert without location...</div>
+    `;
+    console.error('Final Geolocation error:', error);
+
+    // Send notification without location
+    sendNotification(null, null);
 }
 
 async function sendNotification(latitude, longitude) {
