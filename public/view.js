@@ -135,7 +135,9 @@ function handleLocationError(error) {
 
 async function sendNotification(latitude, longitude) {
     try {
-        await fetch('/api/notify', {
+        locationStatus.innerHTML += ' <span style="color:var(--text-muted)">(Requesting server...)</span>';
+
+        const response = await fetch('/api/notify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -144,9 +146,20 @@ async function sendNotification(latitude, longitude) {
                 longitude
             })
         });
-        console.log('Notification sent successfully');
+
+        const result = await response.json();
+
+        if (result.success) {
+            locationStatus.innerHTML = '✅ <b>Emergency Alert Sent!</b><br>Family has been notified.';
+            locationStatus.style.color = 'var(--success)'; // Green
+            console.log('Notification sent successfully');
+        } else {
+            throw new Error(result.message || 'Server error');
+        }
     } catch (e) {
         console.error('Failed to send notification', e);
+        locationStatus.innerHTML = `❌ <b>Alert Failed</b><br>Error: ${e.message}.<br><a href="tel:${document.getElementById('callBtn').href}">Please Call Manually</a>`;
+        locationStatus.style.color = '#ff4757'; // Red
     }
 }
 
