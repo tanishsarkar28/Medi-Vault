@@ -1,0 +1,12 @@
+{
+  "users": [
+    {
+      "id": "af9ceb92-738f-4ff6-943f-366dadd7cf46",
+      "fullName": "John Doe",
+      "bloodGroup": "O+",
+      "allergies": "None",
+      "conditions": "None",
+      "emergencyContact": "1234567890"
+    }
+  ]
+}

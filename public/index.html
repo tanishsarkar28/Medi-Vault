@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medi-Vault | Secure Emergency Record</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container animate-fade-in">
+        <header>
+            <div class="logo">Medi-Vault</div>
+            <div class="subtitle">Secure Emergency Record via QR</div>
+        </header>
+
+        <main>
+            <!-- Registration Form -->
+            <div class="card" id="registration-card">
+                <h2>Create Your Vault</h2>
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" name="fullName" required placeholder="John Doe">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bloodGroup">Blood Group</label>
+                        <select id="bloodGroup" name="bloodGroup" required>
+                            <option value="" disabled selected>Select Blood Group</option>
+                            <option value="A+">A+</option>
+                            <option value="A-">A-</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B-</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB-</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O-</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="emergencyContact">Emergency Contact (Phone)</label>
+                        <input type="tel" id="emergencyContact" name="emergencyContact" required placeholder="+1 234 567 8900">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="allergies">Allergies (Optional)</label>
+                        <input type="text" id="allergies" name="allergies" placeholder="Peanuts, Penicillin">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="conditions">Medical Conditions (Optional)</label>
+                        <input type="text" id="conditions" name="conditions" placeholder="Diabetes, Asthma">
+                    </div>
+
+                    <button type="submit" id="submitBtn">Generate QR Code</button>
+                </form>
+            </div>
+
+            <!-- QR Result (Hidden initially) -->
+            <div class="card qr-result" id="qr-card">
+                <h2>Your Emergency QR</h2>
+                <div class="alert-box">
+                    <span>⚠️</span>
+                    <span>Print this and stick it on your helmet/wallet.</span>
+                </div>
+                <img id="qrImage" src="" alt="Your Emergency QR Code">
+                <p style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted);">
+                    Scan to test or share.
+                </p>
+                <div class="actions">
+                    <a id="downloadLink" href="#" download="medi-vault-qr.png">
+                        <button>Download QR Sticker</button>
+                    </a>
+                    <button class="btn-secondary" onclick="location.reload()">Create New</button>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

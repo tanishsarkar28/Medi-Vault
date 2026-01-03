@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medi-Vault | Emergency Info</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .paramedic-alert {
+            background-color: #ff4757;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            font-weight: bold;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .contact-btn {
+            background-color: #2ed573;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container animate-fade-in">
+        <header>
+            <div class="logo">Medi-Vault</div>
+            <div class="subtitle">Emergency Medical Record</div>
+        </header>
+
+        <main>
+            <div id="loading" style="text-align: center; color: var(--text-muted);">
+                Loading vital information...
+            </div>
+
+            <div id="error" style="display: none; text-align: center; color: var(--primary);">
+                <h3>Error</h3>
+                <p id="errorMsg">Could not load data.</p>
+            </div>
+
+            <div class="card" id="info-card" style="display: none;">
+                <div class="paramedic-alert">
+                    🚑 EMERGENCY MEDICAL DATA
+                </div>
+
+                <h2><span id="userName">...</span></h2>
+
+                <div class="emergency-data-row">
+                    <span class="data-label">Blood Group</span>
+                    <span class="data-value" style="color: var(--primary); font-size: 1.2rem;"
+                        id="bloodGroup">...</span>
+                </div>
+
+                <div class="emergency-data-row">
+                    <span class="data-label">Allergies</span>
+                    <span class="data-value" id="allergies">...</span>
+                </div>
+
+                <div class="emergency-data-row">
+                    <span class="data-label">Medical Conditions</span>
+                    <span class="data-value" id="conditions">...</span>
+                </div>
+
+                <a href="#" id="callBtn" class="contact-btn">
+                    📞 Call Emergency Contact
+                </a>
+
+                <p style="margin-top: 15px; font-size: 0.8rem; color: var(--text-muted); text-align: center;">
+                    <span id="locationStatus">📍 Detecting location for alert...</span>
+                </p>
+            </div>
+        </main>
+    </div>
+    <script src="view.js"></script>
+</body>
+
+</html>
