@@ -56,10 +56,17 @@ function showError(msg) {
 function triggerNotification() {
     if (!navigator.geolocation) {
         locationStatus.textContent = '❌ Location not supported by browser.';
-        // Attempt to notify without location
         sendNotification(null, null);
         return;
     }
+
+    const options = {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+    };
+
+    locationStatus.textContent = '⏳ Acquiring location...';
 
     navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -68,11 +75,28 @@ function triggerNotification() {
             sendNotification(latitude, longitude);
         },
         (error) => {
-            locationStatus.textContent = '⚠️ Location access denied. Alert sent without location.';
+            let msg = 'Unknown error';
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    msg = 'Permission denied';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    msg = 'Position unavailable';
+                    break;
+                case error.TIMEOUT:
+                    msg = 'Location timeout';
+                    break;
+            }
+            // Check for insecure origin (common on mobile LAN)
+            if (window.isSecureContext === false) {
+                msg += ' (Insecure Context: Use HTTPS)';
+            }
+
+            locationStatus.textContent = `⚠️ Location failed: ${msg}. Sending alert anyway.`;
             console.warn('Geolocation error:', error);
-            // Send notification without location
             sendNotification(null, null);
-        }
+        },
+        options
     );
 }
 
